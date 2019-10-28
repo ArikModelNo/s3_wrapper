@@ -1,3 +1,4 @@
+import datetime
 import operator
 import requests
 import base64
@@ -48,6 +49,8 @@ class S3():
 		Returns str of full path.
 		"""
 		if self.cwd == '':
+			if path == '':
+				return f'{filename}'
 			return f'{path}/{filename}'
 		else:
 			return f'{self.cwd}/{path}/{filename}'
@@ -92,6 +95,9 @@ class S3():
 
 		Returns True if it does, False if it doesn't.
 		"""
+		if not filename:
+			print('Why you no give filename?')
+			return False
 		full_path = self._assemblePath(path, filename)
 		for obj_path in self._bucket.objects.all():
 			if full_path == obj_path.key:
@@ -99,25 +105,45 @@ class S3():
 				return True
 		return False
 
-	def uploadWithBase64(self, path, filename, data_base64):
+	def uploadWithBase64(self, path, filename, data_base64, **kwargs):
 		"""
 		Uploads file of given base64 data.
 
 		Returns nothing.
 		"""
+		if not filename:
+			print('Why you no give filename?')
+			return False
+		public = kwargs.get('public')
+		if public is None:
+			print('Is this file public or not?')
+			return False
+		permissions = 'bucket-owner-full-control'
+		if public is True:
+			permissions = 'public-read'
 		data_base64 = re.sub('.*base64,', '', data_base64)
 		data_base64 = base64.b64decode(data_base64)
 		full_path = self._assemblePath(path, filename)
-		self._bucket.put_object(Key=full_path, Body=data_base64)
+		self._bucket.put_object(Key=full_path, Body=data_base64, ACL=permissions)
 
-	def uploadWithBinary(self, path, filename, data_binary):
+	def uploadWithBinary(self, path, filename, data_binary, **kwargs):
 		"""
 		Uploads file of given binary.
 
 		Returns nothing.
 		"""
+		if not filename:
+			print('Why you no give filename?')
+			return False
+		public = kwargs.get('public')
+		if public is None:
+			print('Is this file public or not?')
+			return False
+		permissions = 'bucket-owner-full-control'
+		if public is True:
+			permissions = 'public-read'
 		full_path = self._assemblePath(path, filename)
-		self._bucket.put_object(Key=full_path, Body=data_binary)
+		self._bucket.put_object(Key=full_path, Body=data_binary, ACL=permissions)
 
 	def uploadWithURL(self, path, data_url):
 		"""
@@ -125,6 +151,7 @@ class S3():
 
 		Returns False upon failure to download or interprate file.
 		"""
+		permissions = 'bucket-owner-full-control'
 		try:
 			response = requests.get(data_url)
 		except:
@@ -141,6 +168,6 @@ class S3():
 				filename = regex_result
 			else:
 				print('Failed to retrieve file name')
-				filename = 'untitled'
+				filename = 'untitled_' + datetime.datetime.now().isoformat()
 		full_path = self._assemblePath(path, filename)
-		self._bucket.put_object(Key=full_path, Body=data_binary)
+		self._bucket.put_object(Key=full_path, Body=data_binary, ACL=permissions)

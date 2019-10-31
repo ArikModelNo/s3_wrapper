@@ -121,7 +121,7 @@ class S3():
 		permissions = 'bucket-owner-full-control'
 		if public is True:
 			permissions = 'public-read'
-		data_base64 = re.sub('.*base64,', '', data_base64)
+		data_base64 = data_base64[data_base64.find(',') + 1:]
 		data_base64 = base64.b64decode(data_base64)
 		full_path = self._assemblePath(path, filename)
 		self._bucket.put_object(Key=full_path, Body=data_base64, ACL=permissions)

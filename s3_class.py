@@ -1,15 +1,27 @@
+from django.conf import settings
 import datetime
 import operator
 import requests
 import base64
 import boto3
 import re
+
+
+"""
+Removed old code for s3_config
+Replaced with new django settings file
+
 import os
 import sys
 PACKAGE_PARENT = '..'
 SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
 sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
 from s3_wrapper.s3_config import config
+		self._session = boto3.Session(
+			aws_access_key_id=config['AWS_ACCESS_KEY_ID'],
+			aws_secret_access_key=config['AWS_SECRET_ACCESS_KEY'])
+		self._bucket = self._session.resource('s3').Bucket(config['BUCKET'])
+"""
 
 
 class S3():
@@ -22,9 +34,9 @@ class S3():
 	def __init__(self, cwd = ''):
 		self.cwd = cwd
 		self._session = boto3.Session(
-			aws_access_key_id=config['AWS_ACCESS_KEY_ID'],
-			aws_secret_access_key=config['AWS_SECRET_ACCESS_KEY'])
-		self._bucket = self._session.resource('s3').Bucket(config['BUCKET'])
+			aws_access_key_id=settings.S3_CONFIG['AWS_ACCESS_KEY_ID'],
+			aws_secret_access_key=settings.S3_CONFIG['AWS_SECRET_ACCESS_KEY'])
+		self._bucket = self._session.resource('s3').Bucket(settings.S3_CONFIG['BUCKET'])
 
 	cwd = property(operator.attrgetter('_cwd'))
 
